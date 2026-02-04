@@ -26,3 +26,8 @@
 ## ملاحظة أمان
 هذه نسخة Static: الرابط هو "مفتاح الوصول".
 إذا رغبت حماية أقوى (تسجيل دخول/صلاحيات خادم)، نحتاج إضافة Backend (Netlify Functions / Supabase...).
+
+
+## جلب بيانات الصناديق (إضافة 004)
+- يعتمد على Netlify Function: `/.netlify/functions/goal`
+- السبب: المتصفح يمنع قراءة صفحات donate.utq.org.sa مباشرة بسبب CORS، فنعمل Proxy من Netlify.
