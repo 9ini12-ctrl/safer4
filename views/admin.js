@@ -18,13 +18,14 @@ function downloadJSON(filename, obj){
 }
 
 export async function renderAdmin({ambassadors, additions, content}){
+  const allCodes = new Set((ambassadors || []).map(a => (a.code || "").toString()));
   const root = el("div",{},[
     el("div",{class:"topbar"},[
       el("div",{class:"brand"},[
         el("div",{class:"kicker"},["لوحة الإدارة (Static)"]),
         el("div",{class:"title"},["تحديث البيانات عبر JSON"]),
       ]),
-      el("div",{class:"pill"},["v1"])
+      el("div",{class:"pill"},["v2"])
     ]),
   ]);
 
@@ -64,8 +65,11 @@ export async function renderAdmin({ambassadors, additions, content}){
         const name = document.getElementById("a_name").value.trim();
         const code = document.getElementById("a_code").value.trim();
         if (!name || !code) return toast("الاسم والكود مطلوبين");
+        if (allCodes.has(code)) return toast("الكود موجود مسبقًا — اختر كودًا آخر");
         const ref = document.getElementById("a_ref").value.trim();
         const adds = document.getElementById("a_add").value.trim().split(",").map(s=>s.trim()).filter(Boolean);
+        const invalid = adds.filter(id => !additions?.[id]);
+        if (invalid.length) return toast(`إضافات غير موجودة: ${invalid.join(", ")}`);
         const row = {name, code, referral_code: ref || undefined, additions: adds};
         downloadJSON(`new-ambassador-${code}.json`, row);
         toast("تم توليد ملف السفير ✅");
