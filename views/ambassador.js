@@ -19,7 +19,7 @@ function notFound(){
     el("div",{class:"topbar"},[
       el("div",{class:"brand"},[
         el("div",{class:"kicker"},["منصة السفراء"]),
-        el("div",{class:"title"},["لم يتم العثور على السفير"]),
+        el("div",{class:"title"},["لم يتم العثور على السفير"])
       ]),
       el("a",{class:"pill", href:"/"},["العودة"])
     ]),
@@ -30,11 +30,38 @@ function notFound(){
   ]);
 }
 
+function dashboard({ambassador, additions}){
+  const activeCount = (ambassador?.additions || []).length;
+  const knownCount = Object.keys(additions || {}).length;
+
+  return el("div",{class:"card pad"},[
+    el("h3",{class:"cardtitle"},["لوحة الإنجاز السريعة"]),
+    el("p",{class:"cardsub"},["هنا كل أدواتك المفعّلة لإدارة النشر والمتابعة اليومية."]),
+    el("div",{class:"row", style:"margin-top:10px;"},[
+      el("div",{class:"kpi"},[
+        el("div",{},[
+          el("div",{class:"label"},["الإضافات المفعلة"]),
+          el("div",{class:"value"},[String(activeCount)])
+        ]),
+        el("div",{style:"opacity:.7;font-weight:800"},[`/ ${knownCount}`])
+      ]),
+      el("div",{class:"kpi"},[
+        el("div",{},[
+          el("div",{class:"label"},["كود الإحالة"]),
+          el("div",{class:"value", style:"font-size:14px;direction:ltr;text-align:left;"},[ambassador?.referral_code || "—"])
+        ]),
+        el("div",{style:"opacity:.7;font-weight:800"},["REF"])
+      ])
+    ])
+  ]);
+}
+
 export async function renderAmbassador({ambassador, content, additions}){
   if (!ambassador) return notFound();
 
   const root = el("div",{},[
     topbar({name: ambassador.name, code: ambassador.code}),
+    dashboard({ambassador, additions})
   ]);
 
   const list = el("div",{class:"grid"});
@@ -54,7 +81,6 @@ export async function renderAmbassador({ambassador, content, additions}){
     ]);
     card.appendChild(head);
 
-    // module mount
     const mount = el("div",{});
     card.appendChild(mount);
     list.appendChild(card);
@@ -69,7 +95,6 @@ export async function renderAmbassador({ambassador, content, additions}){
         helpers:{
           money, toast, shareText,
           makeRefLink: () => {
-            // رابط السفير مع كود إحالة: يمكن تغييره حسب سياستكم
             const base = `${location.origin}/s/${ambassador.code}`;
             const ref = ambassador.referral_code ? `?ref=${encodeURIComponent(ambassador.referral_code)}` : "";
             return base + ref;
@@ -82,7 +107,6 @@ export async function renderAmbassador({ambassador, content, additions}){
     }
   }
 
-  // Logout (just back home)
   root.appendChild(el("div",{style:"margin-top:14px;"},[
     el("button",{class:"btn ghost", onclick:()=>location.href="/"},["تسجيل خروج"])
   ]));
