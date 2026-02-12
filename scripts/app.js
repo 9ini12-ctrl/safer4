@@ -41,7 +41,7 @@ async function boot(){
   } else if (view.name === "admin"){
     shell.appendChild(await renderAdmin({ambassadors, additions, content}));
   } else {
-    shell.appendChild(renderHome({ambassadors}));
+    shell.appendChild(renderHome({ambassadors, content}));
   }
 }
 
