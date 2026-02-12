@@ -1,83 +1,117 @@
 import { el, toast } from "../scripts/lib.js";
+import { clearOverrides, clearRuntime, getStore, saveOverrides } from "../scripts/state.js";
 
-function areaTitle(txt){
-  return el("div",{style:"display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;"},[
-    el("h3",{class:"cardtitle", style:"margin:0;"},[txt]),
-    el("a",{class:"pill", href:"/"},["الرئيسية"])
-  ]);
+function blockTitle(title){
+  return el("h3",{class:"cardtitle", style:"margin:0 0 8px;"},[title]);
 }
 
-function downloadJSON(filename, obj){
-  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(url), 500);
+function parseJsonInput(id){
+  const raw = document.getElementById(id).value;
+  return JSON.parse(raw);
 }
 
-export async function renderAdmin({ambassadors, additions, content}){
-  const allCodes = new Set((ambassadors || []).map(a => (a.code || "").toString()));
+function healthChecks({ambassadors, branches}){
+  const issues = [];
+  const codes = new Set();
+  const branchIds = new Set((branches || []).map(b=>b.id));
+
+  for (const b of (branches || [])){
+    if (!b.id || !b.name || !b.manager) issues.push(`بيانات فرع ناقصة: ${b.id || "غير معروف"}`);
+  }
+
+  for (const a of (ambassadors || [])){
+    if (!a.name || !a.code) issues.push("سفير بدون اسم/كود.");
+    if (codes.has(a.code)) issues.push(`كود سفير مكرر: ${a.code}`);
+    codes.add(a.code);
+    if (!branchIds.has(a.branch_id)) issues.push(`السفير ${a.name} مرتبط بفرع غير موجود (${a.branch_id}).`);
+  }
+
+  return issues;
+}
+
+export async function renderAdmin({ambassadors, branches, content}){
+  const runtime = getStore();
+  const issues = healthChecks({ambassadors, branches});
+
   const root = el("div",{},[
     el("div",{class:"topbar"},[
       el("div",{class:"brand"},[
-        el("div",{class:"kicker"},["لوحة الإدارة (Static)"]),
-        el("div",{class:"title"},["تحديث البيانات عبر JSON"]),
+        el("div",{class:"kicker"},["لوحة الإدارة المتكاملة"]),
+        el("div",{class:"title"},["مركز تشغيل حملة رمضان"])
       ]),
-      el("div",{class:"pill"},["v2"])
+      el("a",{class:"pill", href:"/"},["الرئيسية"])
     ]),
-  ]);
 
-  root.appendChild(el("div",{class:"card pad"},[
-    el("h3",{class:"cardtitle"},["كيف تحدث البيانات؟"]),
-    el("p",{class:"cardsub"},[
-      "هذه النسخة تعمل بدون سيرفر. لتحديث الصلاحيات/المحتوى: عدّل ملفات JSON داخل مجلد ",
-      el("span",{style:"font-weight:700;color:rgba(255,255,255,.9)"},["data/"]),
-      " ثم ارفعها على GitHub (Netlify يتحدث تلقائيًا)."
+    el("div",{class:"card pad"},[
+      blockTitle("مؤشرات مباشرة"),
+      el("div",{class:"grid2"},[
+        el("div",{class:"kpi"},[
+          el("div",{},[el("div",{class:"label"},["عدد السفراء"]), el("div",{class:"value"},[String(ambassadors.length)])]),
+          el("div",{class:"small"},["يدعم +800 سفير"])
+        ]),
+        el("div",{class:"kpi"},[
+          el("div",{},[el("div",{class:"label"},["عدد الفروع"]), el("div",{class:"value"},[String(branches.length)])]),
+          el("div",{class:"small"},["إدارة فرعية"])
+        ]),
+        el("div",{class:"kpi"},[
+          el("div",{},[el("div",{class:"label"},["فرص اليوم"]), el("div",{class:"value"},[String(runtime.opportunities.length)])]),
+          el("div",{class:"small"},["تحديث حي"])
+        ]),
+        el("div",{class:"kpi"},[
+          el("div",{},[el("div",{class:"label"},["سلامة البيانات"]), el("div",{class:"value"},[issues.length ? "تنبيه" : "ممتاز"])]),
+          el("div",{class:"small"},[issues.length ? `${issues.length} ملاحظات` : "بدون أخطاء"])
+        ])
+      ])
+    ]),
+
+    el("div",{class:"card pad", style:"margin-top:12px;"},[
+      blockTitle("نتيجة فحص البيانات"),
+      issues.length
+        ? el("ul",{class:"small", style:"line-height:1.9;padding-inline-start:18px;"}, issues.map(i=>el("li",{},[i])))
+        : el("p",{class:"small"},["كل البيانات الأساسية سليمة للنشر ✅"])
+    ]),
+
+    el("div",{class:"card pad", style:"margin-top:12px;"},[
+      blockTitle("محرر البيانات (Input / Output)"),
+      el("p",{class:"small"},["عدّل JSON ثم اضغط تطبيق محلي لتجربة التغييرات فورًا على المنصة، وبعد المراجعة نزّل الملفات وانشرها على GitHub."]),
+
+      el("label",{class:"small"},["ambassadors.json"]),
+      el("textarea",{class:"input", id:"admin_ambs", style:"min-height:170px;resize:vertical;"},[JSON.stringify(ambassadors, null, 2)]),
+
+      el("label",{class:"small", style:"display:block;margin-top:10px;"},["branches.json"]),
+      el("textarea",{class:"input", id:"admin_branches", style:"min-height:170px;resize:vertical;"},[JSON.stringify(branches, null, 2)]),
+
+      el("label",{class:"small", style:"display:block;margin-top:10px;"},["content.json"]),
+      el("textarea",{class:"input", id:"admin_content", style:"min-height:170px;resize:vertical;"},[JSON.stringify(content, null, 2)]),
+
+      el("div",{class:"btnrow"},[
+        el("button",{class:"btn primary", onclick:()=>{
+          try{
+            const o = {
+              ambassadors: parseJsonInput("admin_ambs"),
+              branches: parseJsonInput("admin_branches"),
+              content: parseJsonInput("admin_content")
+            };
+            saveOverrides(o);
+            toast("تم تطبيق التعديلات محليًا ✅");
+            setTimeout(()=>location.reload(), 500);
+          }catch(e){
+            toast(`JSON غير صالح: ${e.message}`);
+          }
+        }},["تطبيق محلي"]),
+        el("button",{class:"btn", onclick:()=>{
+          clearOverrides();
+          toast("تم حذف التعديلات المحلية");
+          setTimeout(()=>location.reload(), 500);
+        }},["إلغاء التعديلات المحلية"]),
+        el("button",{class:"btn", onclick:()=>{
+          clearRuntime();
+          toast("تم تصفير بيانات اليوم");
+          setTimeout(()=>location.reload(), 500);
+        }},["تصفير مؤشرات اليوم"])
+      ])
     ])
-  ]));
-
-  // Export current JSON
-  root.appendChild(el("div",{class:"card pad", style:"margin-top:12px;"},[
-    areaTitle("تصدير الملفات الحالية"),
-    el("div",{class:"btnrow"},[
-      el("button",{class:"btn", onclick:()=>downloadJSON("ambassadors.json", ambassadors)},["تصدير ambassadors.json"]),
-      el("button",{class:"btn", onclick:()=>downloadJSON("additions.json", additions)},["تصدير additions.json"]),
-      el("button",{class:"btn", onclick:()=>downloadJSON("content.json", content)},["تصدير content.json"]),
-    ]),
-    el("p",{class:"small", style:"margin:10px 0 0;"},["تقدر تعدّلها ثم تستبدلها داخل الريبو."])
-  ]));
-
-  // Quick help: add ambassador
-  const form = el("div",{class:"card pad", style:"margin-top:12px;"},[
-    areaTitle("مولّد سفير جديد (سريع)"),
-    el("div",{class:"row"},[
-      el("input",{class:"input", placeholder:"اسم السفير", id:"a_name"}),
-      el("input",{class:"input", placeholder:"الكود (مثال 83923)", inputmode:"numeric", id:"a_code"}),
-    ]),
-    el("div",{class:"row", style:"margin-top:10px;"},[
-      el("input",{class:"input", placeholder:"كود الإحالة (اختياري)", id:"a_ref"}),
-      el("input",{class:"input", placeholder:"الإضافات (001,002)", id:"a_add"}),
-    ]),
-    el("div",{class:"btnrow"},[
-      el("button",{class:"btn primary", onclick:()=>{
-        const name = document.getElementById("a_name").value.trim();
-        const code = document.getElementById("a_code").value.trim();
-        if (!name || !code) return toast("الاسم والكود مطلوبين");
-        if (allCodes.has(code)) return toast("الكود موجود مسبقًا — اختر كودًا آخر");
-        const ref = document.getElementById("a_ref").value.trim();
-        const adds = document.getElementById("a_add").value.trim().split(",").map(s=>s.trim()).filter(Boolean);
-        const invalid = adds.filter(id => !additions?.[id]);
-        if (invalid.length) return toast(`إضافات غير موجودة: ${invalid.join(", ")}`);
-        const row = {name, code, referral_code: ref || undefined, additions: adds};
-        downloadJSON(`new-ambassador-${code}.json`, row);
-        toast("تم توليد ملف السفير ✅");
-      }} ,["توليد ملف JSON للسفير"]),
-    ]),
-    el("p",{class:"small", style:"margin:10px 0 0;"},["ادمج السفير الجديد داخل data/ambassadors.json في الريبو."])
   ]);
-  root.appendChild(form);
 
   return root;
 }

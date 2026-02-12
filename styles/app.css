@@ -293,3 +293,56 @@ button, input, textarea{ font-family: inherit; }
   .tag{ color: rgba(255,255,255,.8); background: rgba(0,0,0,.24); border-color: rgba(255,255,255,.10); }
   .toast{ background: rgba(0,0,0,.55); color: rgba(255,255,255,.92); box-shadow: 0 18px 50px rgba(0,0,0,.45); }
 }
+
+.feature-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.feature-item{
+  border:1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.56);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+.feature-title{
+  font-weight:800;
+  font-size:14px;
+  margin-bottom:4px;
+}
+
+.admin-list{
+  margin-top: 12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.admin-item{
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: 14px;
+  padding: 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background: rgba(255,255,255,.58);
+}
+
+@media (max-width: 560px){
+  .row{ flex-direction:column; }
+  .quick-btn{ width:100%; }
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+
+textarea.input{
+  line-height:1.5;
+}
+
+@media (max-width: 560px){
+  .grid2{ grid-template-columns: 1fr; }
+}

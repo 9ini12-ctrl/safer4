@@ -1,0 +1,29 @@
+[
+  {
+    "id": "BR-RYD",
+    "name": "فرع الرياض",
+    "manager": "عبدالله القحطاني",
+    "daily_targets": {
+      "donations": 120000,
+      "opportunities": 60
+    }
+  },
+  {
+    "id": "BR-JED",
+    "name": "فرع جدة",
+    "manager": "ريم الحربي",
+    "daily_targets": {
+      "donations": 90000,
+      "opportunities": 45
+    }
+  },
+  {
+    "id": "BR-DMM",
+    "name": "فرع الدمام",
+    "manager": "سلمان الشهري",
+    "daily_targets": {
+      "donations": 70000,
+      "opportunities": 35
+    }
+  }
+]

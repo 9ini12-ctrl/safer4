@@ -2,20 +2,41 @@
   {
     "name": "أحمد السفير",
     "code": "83923",
+    "branch_id": "BR-RYD",
     "referral_code": "AHM-83923",
-    "additions": [
-      "001",
-      "002",
-      "004"
-    ]
+    "daily_targets": {
+      "donations": 4500,
+      "boxes": 4
+    }
   },
   {
     "name": "سارة السفيرة",
     "code": "52718",
+    "branch_id": "BR-RYD",
     "referral_code": "SAR-52718",
-    "additions": [
-      "001",
-      "004"
-    ]
+    "daily_targets": {
+      "donations": 4000,
+      "boxes": 3
+    }
+  },
+  {
+    "name": "عبدالعزيز الداعية",
+    "code": "60211",
+    "branch_id": "BR-JED",
+    "referral_code": "ABD-60211",
+    "daily_targets": {
+      "donations": 5000,
+      "boxes": 5
+    }
+  },
+  {
+    "name": "نورة القائدة",
+    "code": "77510",
+    "branch_id": "BR-DMM",
+    "referral_code": "NOR-77510",
+    "daily_targets": {
+      "donations": 3500,
+      "boxes": 3
+    }
   }
 ]
